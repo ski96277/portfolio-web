@@ -18,6 +18,35 @@
         <i class="fas fa-moon moon-icon"></i>
     </button>
 
+    <!-- Privacy Notice & Cookie Consent -->
+    <div id="privacy-notice" class="privacy-notice">
+        <div class="privacy-content">
+            <h3>🍪 Privacy & Analytics</h3>
+            <p>We use Firebase Analytics to understand how visitors interact with this portfolio. This helps us improve
+                the user experience.</p>
+            <div class="privacy-details">
+                <p><strong>What we track:</strong></p>
+                <ul>
+                    <li>📍 General location (country/region)</li>
+                    <li>⏱️ Time spent on the website</li>
+                    <li>📊 Which sections you view</li>
+                    <li>🔗 Links you click</li>
+                    <li>📱 Device and browser information</li>
+                </ul>
+                <p><strong>We do NOT track:</strong></p>
+                <ul>
+                    <li>❌ Personal information</li>
+                    <li>❌ Exact location (unless you allow)</li>
+                    <li>❌ Individual browsing history</li>
+                </ul>
+            </div>
+            <div class="privacy-actions">
+                <button id="accept-analytics" class="btn btn-primary">Accept & Continue</button>
+                <button id="decline-analytics" class="btn btn-secondary">Decline</button>
+            </div>
+        </div>
+    </div>
+
     <header>
         <div class="container">
             <nav>
@@ -1063,6 +1092,209 @@
     </footer>
 
     <script src="js/script.js"></script>
+
+    <!-- Firebase Analytics -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAnalytics, logEvent, setUserId, setUserProperties } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAUEhIf95bYTf5RzgzAchu-napVdyY0WQ0",
+            authDomain: "imran-sportfolio.firebaseapp.com",
+            projectId: "imran-sportfolio",
+            storageBucket: "imran-sportfolio.firebasestorage.app",
+            messagingSenderId: "300892196189",
+            appId: "1:300892196189:web:7fae9b8646fca87d3becb4",
+            measurementId: "G-L4481WHEKK"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        let analytics = null;
+
+        // Check consent before initializing analytics
+        const hasConsented = localStorage.getItem('analytics-consent');
+        if (hasConsented === 'accepted') {
+            analytics = getAnalytics(app);
+
+            // Track page view
+            logEvent(analytics, 'page_view', {
+                page_title: document.title,
+                page_location: window.location.href,
+                custom_domain: 'imransk.me'
+            });
+        }
+
+        // Track visitor location and session start
+        if (analytics && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    logEvent(analytics, 'visitor_location', {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    });
+                },
+                (error) => {
+                    // Fallback to IP-based location or continue without location
+                    console.log('Location access denied or unavailable');
+                }
+            );
+        }
+
+        // Track time spent on website
+        let startTime = Date.now();
+        let isActive = true;
+
+        // Track when user becomes inactive
+        document.addEventListener('visibilitychange', () => {
+            if (analytics && document.hidden) {
+                isActive = false;
+                const timeSpent = Math.round((Date.now() - startTime) / 1000);
+                logEvent(analytics, 'session_duration', {
+                    time_spent_seconds: timeSpent,
+                    page: window.location.pathname
+                });
+            } else if (!document.hidden) {
+                isActive = true;
+                startTime = Date.now();
+            }
+        });
+
+        // Track time spent before leaving
+        window.addEventListener('beforeunload', () => {
+            if (analytics && isActive) {
+                const timeSpent = Math.round((Date.now() - startTime) / 1000);
+                logEvent(analytics, 'session_duration', {
+                    time_spent_seconds: timeSpent,
+                    page: window.location.pathname
+                });
+            }
+        });
+
+        // Track scroll depth
+        let maxScroll = 0;
+        window.addEventListener('scroll', () => {
+            if (!analytics) return;
+
+            const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+            if (scrollPercent > maxScroll) {
+                maxScroll = scrollPercent;
+                if (scrollPercent >= 25 && scrollPercent < 50) {
+                    logEvent(analytics, 'scroll', { percent_scrolled: 25 });
+                } else if (scrollPercent >= 50 && scrollPercent < 75) {
+                    logEvent(analytics, 'scroll', { percent_scrolled: 50 });
+                } else if (scrollPercent >= 75 && scrollPercent < 90) {
+                    logEvent(analytics, 'scroll', { percent_scrolled: 75 });
+                } else if (scrollPercent >= 90) {
+                    logEvent(analytics, 'scroll', { percent_scrolled: 90 });
+                }
+            }
+        });
+
+        // Track portfolio interactions
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!analytics) return;
+
+            // Track section views
+            const sections = ['hero', 'about', 'skills', 'projects', 'experience', 'education', 'contact'];
+            sections.forEach(section => {
+                const element = document.getElementById(section);
+                if (element) {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                logEvent(analytics, 'section_view', {
+                                    section_name: section,
+                                    page: window.location.pathname
+                                });
+                            }
+                        });
+                    }, { threshold: 0.5 });
+                    observer.observe(element);
+                }
+            });
+
+            // Track button clicks
+            document.querySelectorAll('a[href^="#"]').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (analytics) {
+                        logEvent(analytics, 'navigation_click', {
+                            link_text: link.textContent.trim(),
+                            link_destination: link.getAttribute('href')
+                        });
+                    }
+                });
+            });
+
+            // Track external links
+            document.querySelectorAll('a[href^="http"]').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (analytics) {
+                        logEvent(analytics, 'external_link_click', {
+                            link_url: link.href,
+                            link_text: link.textContent.trim()
+                        });
+                    }
+                });
+            });
+
+            // Track theme toggle
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    if (analytics) {
+                        logEvent(analytics, 'theme_toggle', {
+                            current_theme: document.body.getAttribute('data-theme') || 'light'
+                        });
+                    }
+                });
+            }
+
+            // Track mobile menu usage
+            const menuToggle = document.getElementById('menu-toggle');
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    if (analytics) {
+                        logEvent(analytics, 'mobile_menu_toggle', {
+                            menu_state: menuToggle.getAttribute('aria-expanded') === 'true' ? 'opened' : 'closed'
+                        });
+                    }
+                });
+            }
+        });
+
+        // Track custom domain information
+        if (analytics) {
+            // Set user properties for domain tracking
+            setUserProperties(analytics, {
+                domain: window.location.hostname,
+                is_custom_domain: window.location.hostname === 'imransk.me',
+                environment: window.location.hostname === 'localhost' ? 'development' : 'production'
+            });
+        }
+
+        // Make analytics available globally
+        window.portfolioAnalytics = {
+            logEvent: (eventName, parameters) => {
+                if (analytics) {
+                    logEvent(analytics, eventName, parameters);
+                }
+            },
+            setUserId: (userId) => {
+                if (analytics) {
+                    setUserId(analytics, userId);
+                }
+            },
+            setUserProperties: (properties) => {
+                if (analytics) {
+                    setUserProperties(analytics, properties);
+                }
+            }
+        };
+    </script>
 </body>
 
 </html>

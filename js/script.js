@@ -3,6 +3,7 @@ const header = document.querySelector('header');
 const menuToggle = document.querySelector('.menu-toggle');
 const navMenu = document.querySelector('.nav-menu');
 const navLinks = document.querySelectorAll('.nav-menu a');
+const privacyNotice = document.getElementById('privacy-notice');
 
 // Performance optimization
 let ticking = false;
@@ -273,3 +274,53 @@ themeToggle.addEventListener('click', () => {
         body.style.transition = '';
     }, 300);
 });
+
+// Privacy Notice and Analytics Consent
+document.addEventListener('DOMContentLoaded', () => {
+    const hasConsented = localStorage.getItem('analytics-consent');
+
+    // Show privacy notice if no consent given
+    if (!hasConsented && privacyNotice) {
+        setTimeout(() => {
+            privacyNotice.classList.add('show');
+        }, 2000); // Show after 2 seconds
+    }
+
+    // Handle privacy consent
+    const acceptBtn = document.getElementById('accept-analytics');
+    const declineBtn = document.getElementById('decline-analytics');
+
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', () => {
+            localStorage.setItem('analytics-consent', 'accepted');
+            privacyNotice.classList.remove('show');
+            // Enable analytics tracking
+            enableAnalytics();
+        });
+    }
+
+    if (declineBtn) {
+        declineBtn.addEventListener('click', () => {
+            localStorage.setItem('analytics-consent', 'declined');
+            privacyNotice.classList.remove('show');
+            // Analytics will be disabled by default
+        });
+    }
+
+    // Initialize analytics if consent was previously given
+    if (hasConsented === 'accepted') {
+        enableAnalytics();
+    }
+});
+
+// Analytics tracking functions
+function enableAnalytics() {
+    // This will be called by the Firebase script when consent is given
+    if (window.portfolioAnalytics) {
+        // Track consent given
+        window.portfolioAnalytics.logEvent('analytics_consent', {
+            consent_given: true,
+            timestamp: new Date().toISOString()
+        });
+    }
+}

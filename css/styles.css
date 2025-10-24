@@ -126,6 +126,120 @@
     }
 }
 
+/* Privacy Notice Styles */
+.privacy-notice {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    max-width: 500px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    display: none;
+}
+
+.privacy-notice.show {
+    display: block;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.privacy-content {
+    padding: 20px;
+}
+
+.privacy-content h3 {
+    margin: 0 0 10px 0;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+.privacy-content p {
+    margin: 0 0 15px 0;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.privacy-details {
+    margin: 15px 0;
+    font-size: 0.85rem;
+}
+
+.privacy-details p {
+    margin: 8px 0 5px 0;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.privacy-details ul {
+    margin: 5px 0 15px 20px;
+    padding: 0;
+}
+
+.privacy-details li {
+    margin: 3px 0;
+    color: var(--text-color);
+    font-size: 0.8rem;
+}
+
+.privacy-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.privacy-actions .btn {
+    flex: 1;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+}
+
+/* Dark theme privacy notice */
+[data-theme="dark"] .privacy-notice {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .privacy-content h3,
+[data-theme="dark"] .privacy-content p,
+[data-theme="dark"] .privacy-details p,
+[data-theme="dark"] .privacy-details li {
+    color: var(--text-color);
+}
+
+/* Mobile responsive privacy notice */
+@media screen and (max-width: 768px) {
+    .privacy-notice {
+        bottom: 80px;
+        /* Above the theme toggle */
+        left: 10px;
+        right: 10px;
+        max-width: none;
+    }
+
+    .privacy-content {
+        padding: 15px;
+    }
+
+    .privacy-actions {
+        flex-direction: column;
+    }
+
+    .privacy-actions .btn {
+        width: 100%;
+        margin: 2px 0;
+    }
+}
+
 @media screen and (max-width: 480px) {
     .theme-toggle {
         bottom: 16px;
