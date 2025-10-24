@@ -1171,6 +1171,11 @@
                     time_spent_seconds: timeSpent,
                     page: window.location.pathname
                 });
+
+                // Log final menu statistics when leaving
+                if (window.portfolioAnalytics) {
+                    window.portfolioAnalytics.logMenuStats();
+                }
             }
         });
 
@@ -1217,14 +1222,41 @@
                 }
             });
 
-            // Track button clicks
+            // Track menu item clicks with detailed analytics and counters
             document.querySelectorAll('a[href^="#"]').forEach(link => {
                 link.addEventListener('click', () => {
                     if (analytics) {
-                        logEvent(analytics, 'navigation_click', {
-                            link_text: link.textContent.trim(),
-                            link_destination: link.getAttribute('href')
+                        const linkText = link.textContent.trim();
+                        const linkDestination = link.getAttribute('href');
+
+                        // Increment click counter for this menu item
+                        const clickCount = menuClickCounter.increment(linkText);
+                        const totalClicks = menuClickCounter.getTotalClicks();
+                        const mostClicked = menuClickCounter.getMostClicked();
+
+                        // Track detailed menu click analytics with counters
+                        logEvent(analytics, 'menu_item_click', {
+                            menu_item: linkText,
+                            destination: linkDestination,
+                            click_count: clickCount,
+                            total_menu_clicks: totalClicks,
+                            most_clicked_item: mostClicked.item,
+                            most_clicked_count: mostClicked.count,
+                            click_timestamp: new Date().toISOString(),
+                            user_agent: navigator.userAgent,
+                            screen_resolution: `${screen.width}x${screen.height}`,
+                            viewport_size: `${window.innerWidth}x${window.innerHeight}`
                         });
+
+                        // Track navigation clicks (existing)
+                        logEvent(analytics, 'navigation_click', {
+                            link_text: linkText,
+                            link_destination: linkDestination,
+                            click_count: clickCount
+                        });
+
+                        // Log to console for debugging (remove in production)
+                        console.log(`Menu Click: ${linkText} (${clickCount} times) | Total: ${totalClicks} | Most Clicked: ${mostClicked.item} (${mostClicked.count})`);
                     }
                 });
             });
@@ -1266,6 +1298,45 @@
             }
         });
 
+        // Menu click counter system
+        const menuClickCounter = {
+            // Initialize click counters from localStorage
+            getCounters: () => {
+                const stored = localStorage.getItem('menu_click_counters');
+                return stored ? JSON.parse(stored) : {};
+            },
+
+            // Increment click count for a menu item
+            increment: (menuItem) => {
+                const counters = menuClickCounter.getCounters();
+                counters[menuItem] = (counters[menuItem] || 0) + 1;
+                localStorage.setItem('menu_click_counters', JSON.stringify(counters));
+                return counters[menuItem];
+            },
+
+            // Get total clicks across all menu items
+            getTotalClicks: () => {
+                const counters = menuClickCounter.getCounters();
+                return Object.values(counters).reduce((sum, count) => sum + count, 0);
+            },
+
+            // Get most clicked menu item
+            getMostClicked: () => {
+                const counters = menuClickCounter.getCounters();
+                let mostClicked = null;
+                let maxClicks = 0;
+
+                for (const [item, count] of Object.entries(counters)) {
+                    if (count > maxClicks) {
+                        maxClicks = count;
+                        mostClicked = item;
+                    }
+                }
+
+                return { item: mostClicked, count: maxClicks };
+            }
+        };
+
         // Track custom domain information
         if (analytics) {
             // Set user properties for domain tracking
@@ -1275,6 +1346,16 @@
                 environment: window.location.hostname === 'localhost' ? 'development' : 'production'
             });
         }
+
+        // Periodic menu statistics logging (every 5 minutes)
+        setInterval(() => {
+            if (analytics && window.portfolioAnalytics) {
+                const stats = window.portfolioAnalytics.getMenuStats();
+                if (stats.totalClicks > 0) {
+                    window.portfolioAnalytics.logMenuStats();
+                }
+            }
+        }, 5 * 60 * 1000); // 5 minutes
 
         // Make analytics available globally
         window.portfolioAnalytics = {
@@ -1291,6 +1372,27 @@
             setUserProperties: (properties) => {
                 if (analytics) {
                     setUserProperties(analytics, properties);
+                }
+            },
+            // Menu click statistics
+            getMenuStats: () => {
+                return {
+                    counters: menuClickCounter.getCounters(),
+                    totalClicks: menuClickCounter.getTotalClicks(),
+                    mostClicked: menuClickCounter.getMostClicked()
+                };
+            },
+            // Log menu statistics summary
+            logMenuStats: () => {
+                if (analytics) {
+                    const stats = window.portfolioAnalytics.getMenuStats();
+                    logEvent(analytics, 'menu_statistics_summary', {
+                        total_menu_clicks: stats.totalClicks,
+                        most_clicked_item: stats.mostClicked.item,
+                        most_clicked_count: stats.mostClicked.count,
+                        click_breakdown: stats.counters,
+                        timestamp: new Date().toISOString()
+                    });
                 }
             }
         };

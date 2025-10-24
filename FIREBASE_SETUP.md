@@ -54,11 +54,22 @@ const firebaseConfig = {
 ### **Custom Events:**
 - `section_view`: When users view portfolio sections
 - `navigation_click`: Internal navigation clicks
+- `menu_item_click`: **Detailed menu click tracking with counters**
+- `menu_statistics_summary`: **Periodic menu usage statistics**
 - `external_link_click`: Social media and external links
 - `theme_toggle`: Dark/light theme switches
 - `mobile_menu_toggle`: Mobile menu usage
 - `scroll`: Scroll depth (25%, 50%, 75%, 90%)
 - `session_duration`: Time spent on website
+
+### **📊 Menu Click Analytics:**
+- **Individual Click Counts**: How many times each menu item is clicked
+- **Total Menu Clicks**: Overall navigation activity
+- **Most Clicked Item**: Which section gets the most attention
+- **Click Timestamps**: When each click occurs
+- **Device Information**: Screen resolution, viewport size
+- **Periodic Summaries**: Statistics logged every 5 minutes
+- **Session End Summary**: Final menu usage when leaving
 
 ### **Privacy Compliant:**
 - ✅ **User Consent**: Privacy notice before tracking
