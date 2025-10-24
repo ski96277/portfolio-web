@@ -99,6 +99,24 @@ const projectModals = document.querySelectorAll('.modal');
 const moreInfoBtns = document.querySelectorAll('.more-info-btn');
 const closeModalBtns = document.querySelectorAll('.close-modal');
 
+// Function to close modal
+function closeModal(modal) {
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+
+        // Track modal close analytics
+        if (window.portfolioAnalytics) {
+            window.portfolioAnalytics.logEvent('modal_closed', {
+                modal_id: modal.id,
+                project_name: modal.querySelector('h2')?.textContent || 'Unknown',
+                timestamp: new Date().toISOString(),
+                close_method: 'programmatic'
+            });
+        }
+    }
+}
+
 // Open modal when more info button is clicked
 moreInfoBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -107,18 +125,30 @@ moreInfoBtns.forEach((btn) => {
         if (modal) {
             modal.classList.add('show');
             document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+
+            // Track modal open analytics
+            if (window.portfolioAnalytics) {
+                window.portfolioAnalytics.logEvent('modal_opened', {
+                    modal_id: modalId,
+                    project_name: modal.querySelector('h2')?.textContent || 'Unknown',
+                    timestamp: new Date().toISOString(),
+                    user_agent: navigator.userAgent,
+                    screen_resolution: `${screen.width}x${screen.height}`
+                });
+            }
         }
     });
 });
 
 // Close modal when close button is clicked
 closeModalBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
         const modal = btn.closest('.modal');
-        if (modal) {
-            modal.classList.remove('show');
-            document.body.style.overflow = ''; // Restore scrolling
-        }
+        console.log('Close button clicked for modal:', modal?.id); // Debug log
+        closeModal(modal);
     });
 });
 
@@ -126,8 +156,7 @@ closeModalBtns.forEach(btn => {
 projectModals.forEach(modal => {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
-            modal.classList.remove('show');
-            document.body.style.overflow = ''; // Restore scrolling
+            closeModal(modal);
         }
     });
 });
@@ -137,8 +166,7 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         projectModals.forEach(modal => {
             if (modal.classList.contains('show')) {
-                modal.classList.remove('show');
-                document.body.style.overflow = ''; // Restore scrolling
+                closeModal(modal);
             }
         });
     }
@@ -190,14 +218,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Add loading states for images
 document.addEventListener('DOMContentLoaded', () => {
+    // Preload critical images
+    const criticalImages = [
+        'https://play-lh.googleusercontent.com/qTlyZ0eW6964p3nOHUy-AN6XLJzGnzu8qND7sPN8GmYCX_4LHtUgDvg3IrCXbv9UAg=w416-h235-rw',
+        'https://play-lh.googleusercontent.com/k0EyLYf24tx9WCOzfKxsBC3SUKTjjbrsuK6M95JbzTAA6Z-fe2ea8Ivqi3VJadP-790=w416-h235-rw',
+        'https://play-lh.googleusercontent.com/E9jrvKMEaNGUL1O3q6yB9t_ArVZYuZP8EpCLfiedaW9JuWzlxmzDg7okLlM_k379VBv5=w416-h235-rw'
+    ];
+
+    criticalImages.forEach(src => {
+        const preloadImg = new Image();
+        preloadImg.src = src;
+    });
+
     const images = document.querySelectorAll('img');
     images.forEach(img => {
         img.addEventListener('load', () => {
             img.classList.remove('loading');
+            console.log('Image loaded successfully:', img.src);
+        });
+
+        img.addEventListener('error', () => {
+            img.classList.remove('loading');
+            console.error('Failed to load image:', img.src);
+
+            // Retry loading the image after a short delay
+            setTimeout(() => {
+                const retryImg = new Image();
+                retryImg.onload = () => {
+                    img.src = retryImg.src;
+                    img.classList.remove('loading');
+                    console.log('Image loaded on retry:', img.src);
+                };
+                retryImg.onerror = () => {
+                    // If retry also fails, show error state
+                    img.style.border = '2px dashed #ff6b6b';
+                    img.style.backgroundColor = '#ffe0e0';
+                    img.alt = 'Image failed to load - ' + img.alt;
+                    console.error('Image retry also failed:', img.src);
+                };
+                retryImg.src = img.src;
+            }, 1000);
         });
 
         if (!img.complete) {
             img.classList.add('loading');
+
+            // Set a timeout for slow-loading images
+            const timeoutId = setTimeout(() => {
+                if (img.classList.contains('loading')) {
+                    console.warn('Image loading timeout:', img.src);
+                    img.classList.remove('loading');
+                    // Try to reload the image
+                    const currentSrc = img.src;
+                    img.src = '';
+                    setTimeout(() => {
+                        img.src = currentSrc;
+                    }, 100);
+                }
+            }, 10000); // 10 second timeout
+
+            img.addEventListener('load', () => {
+                clearTimeout(timeoutId);
+            });
         }
     });
 });
@@ -317,10 +399,14 @@ document.addEventListener('DOMContentLoaded', () => {
 function enableAnalytics() {
     // This will be called by the Firebase script when consent is given
     if (window.portfolioAnalytics) {
-        // Track consent given
-        window.portfolioAnalytics.logEvent('analytics_consent', {
-            consent_given: true,
-            timestamp: new Date().toISOString()
-        });
+        try {
+            // Track consent given
+            window.portfolioAnalytics.logEvent('analytics_consent', {
+                consent_given: true,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.warn('Analytics tracking failed:', error);
+        }
     }
 }

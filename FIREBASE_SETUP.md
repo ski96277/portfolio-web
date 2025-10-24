@@ -56,6 +56,8 @@ const firebaseConfig = {
 - `navigation_click`: Internal navigation clicks
 - `menu_item_click`: **Detailed menu click tracking with counters**
 - `menu_statistics_summary`: **Periodic menu usage statistics**
+- `modal_opened`: **Project info dialog opened with animations**
+- `modal_closed`: **Project info dialog closed (track close method)**
 - `external_link_click`: Social media and external links
 - `theme_toggle`: Dark/light theme switches
 - `mobile_menu_toggle`: Mobile menu usage
@@ -70,6 +72,14 @@ const firebaseConfig = {
 - **Device Information**: Screen resolution, viewport size
 - **Periodic Summaries**: Statistics logged every 5 minutes
 - **Session End Summary**: Final menu usage when leaving
+
+### **🎬 Modal Animation Analytics:**
+- **Project Dialog Opens**: Track which projects get most attention
+- **Close Method Tracking**: How users close dialogs (button, outside click, escape key)
+- **Modal Interaction Time**: How long users spend in project dialogs
+- **Animation Performance**: Smooth modal animations with backdrop blur
+- **Mobile Optimized**: Responsive animations for all devices
+- **Ripple Effects**: Interactive button animations with ripple effects
 
 ### **Privacy Compliant:**
 - ✅ **User Consent**: Privacy notice before tracking

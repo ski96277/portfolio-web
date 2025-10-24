@@ -256,7 +256,7 @@
                 <div class="project-card slide-in-up">
                     <div class="project-image">
                         <img src="https://play-lh.googleusercontent.com/k0EyLYf24tx9WCOzfKxsBC3SUKTjjbrsuK6M95JbzTAA6Z-fe2ea8Ivqi3VJadP-790=w416-h235-rw"
-                            alt="The Prenatal Nutrition Library App">
+                            alt="The Prenatal Nutrition Library App" loading="lazy">
                     </div>
                     <div class="project-info">
                         <h3>The Prenatal Nutrition Library</h3>
@@ -284,8 +284,8 @@
                 <!-- V-Strength Project Card -->
                 <div class="project-card scale-in">
                     <div class="project-image">
-                        <img src="http://play-lh.googleusercontent.com/E9jrvKMEaNGUL1O3q6yB9t_ArVZYuZP8EpCLfiedaW9JuWzlxmzDg7okLlM_k379VBv5=w416-h235-rw"
-                            alt="V-Strength: Gym Tracker & Log App">
+                        <img src="https://play-lh.googleusercontent.com/E9jrvKMEaNGUL1O3q6yB9t_ArVZYuZP8EpCLfiedaW9JuWzlxmzDg7okLlM_k379VBv5=w416-h235-rw"
+                            alt="V-Strength: Gym Tracker & Log App" loading="lazy">
                     </div>
                     <div class="project-info">
                         <h3>V-Strength: Gym Tracker & Log</h3>
@@ -315,7 +315,7 @@
                 <div class="project-card">
                     <div class="project-image">
                         <img src="https://play-lh.googleusercontent.com/KbqGaUWilsJnwLrbPD9fOgzvG77sigZTAPF6FY4hMKXL5Fceb-jeHEQ4pB0tUFXbsbJb=w416-h235-rw"
-                            alt="Mortgage Magic - Client App">
+                            alt="Mortgage Magic - Client App" loading="lazy">
                     </div>
                     <div class="project-info">
                         <h3>Mortgage Magic - Client</h3>
@@ -343,7 +343,7 @@
                 <div class="project-card">
                     <div class="project-image">
                         <img src="https://play-lh.googleusercontent.com/0VpZsdH7_khUBAj8qcpa-hhuuuOTfVv8iyoLy4aVGnnWg9CWct8UdgDAlATotiXMcPM7=w416-h235-rw"
-                            alt="ARCHICONNECT HOMES App">
+                            alt="ARCHICONNECT HOMES App" loading="lazy">
                     </div>
                     <div class="project-info">
                         <h3>ARCHICONNECT HOMES</h3>
@@ -371,7 +371,7 @@
                 <div class="project-card">
                     <div class="project-image">
                         <img src="https://play-lh.googleusercontent.com/ZC0yMS2rTtTkwX7KSvDNL0mLo5hC-Ai5IfKtiDdfK9aMFsaaJQxjOQYMmH8lyufsbbs=w416-h235-rw"
-                            alt="ARCHICONNECT ACADEMY App">
+                            alt="ARCHICONNECT ACADEMY App" loading="lazy">
                     </div>
                     <div class="project-info">
                         <h3>ARCHICONNECT ACADEMY</h3>
@@ -401,7 +401,7 @@
                 <div class="project-card">
                     <div class="project-image">
                         <img src="https://play-lh.googleusercontent.com/Qs7k7c_hqUENCXbDIC8TgA09CI3MbFIXhSoh5ExjnRv6pfeXUrgI93B8emQar61EEWo=w416-h235-rw"
-                            alt="Adolescent Nutrition Reporting App">
+                            alt="Adolescent Nutrition Reporting App" loading="lazy">
                     </div>
                     <div class="project-info">
                         <h3>Adolescent Nutrition Reporting</h3>
@@ -429,7 +429,7 @@
                 <div class="project-card">
                     <div class="project-image">
                         <img src="https://play-lh.googleusercontent.com/SE1jeCVrQq7JJtzggdWT82Te9yuk940VjoeNx6HbX0_-8QXOX_r432CXJ-RlO8_NZg=w416-h235-rw"
-                            alt="MMHF Toll App">
+                            alt="MMHF Toll App" loading="lazy">
                     </div>
                     <div class="project-info">
                         <h3>MMHF Toll</h3>
@@ -459,7 +459,7 @@
                 <div class="project-card">
                     <div class="project-image">
                         <img src="https://play-lh.googleusercontent.com/1Qk7WjMVPZ1FCWzG5dfkyzrw-zN5t8Lnj54qx1gMXfQyO7k-EwEIGJoZ3OfYyVVrkzA=w416-h235-rw"
-                            alt="Resono App">
+                            alt="Resono App" loading="lazy">
                     </div>
                     <div class="project-info">
                         <h3>Resono</h3>
@@ -935,7 +935,7 @@
                     <div class="timeline-content">
                         <h3>Mobile Application Developer</h3>
                         <h4>Teamlance, Bulgaria</h4>
-                        <p class="timeline-date">May 2022 - Present</p>
+                        <p class="timeline-date">May 2022 - October 2025</p>
                         <ul class="experience-list">
                             <li>Developing mobile applications using Flutter.</li>
                             <li>Managing and coordinating a small team.</li>
@@ -1360,18 +1360,30 @@
         // Make analytics available globally
         window.portfolioAnalytics = {
             logEvent: (eventName, parameters) => {
-                if (analytics) {
-                    logEvent(analytics, eventName, parameters);
+                try {
+                    if (analytics) {
+                        logEvent(analytics, eventName, parameters);
+                    }
+                } catch (error) {
+                    console.warn('Analytics logEvent failed:', error);
                 }
             },
             setUserId: (userId) => {
-                if (analytics) {
-                    setUserId(analytics, userId);
+                try {
+                    if (analytics) {
+                        setUserId(analytics, userId);
+                    }
+                } catch (error) {
+                    console.warn('Analytics setUserId failed:', error);
                 }
             },
             setUserProperties: (properties) => {
-                if (analytics) {
-                    setUserProperties(analytics, properties);
+                try {
+                    if (analytics) {
+                        setUserProperties(analytics, properties);
+                    }
+                } catch (error) {
+                    console.warn('Analytics setUserProperties failed:', error);
                 }
             },
             // Menu click statistics
